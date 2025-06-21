@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Pre Test - Deadlock Detection Algorithm</title>
+    
+    <!-- Bootstrap 4.6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --border-color: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+            text-decoration: none;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            margin: 2rem auto;
+            max-width: 1400px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 800px;
+            padding: 2rem 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin: 0.5rem 0;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0 25px 25px 0;
+            margin-right: 1rem;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .content-area {
+            padding: 3rem;
+            min-height: 800px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--accent-color);
+            display: inline-block;
+        }
+
+        .question {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: var(--primary-color);
+            background: #f0f9ff;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 1rem;
+            transform: scale(1.2);
+        }
+
+        .option.correct {
+            border-color: var(--success-color);
+            background: #f0fdf4;
+            color: var(--success-color);
+        }
+
+        .option.incorrect {
+            border-color: var(--danger-color);
+            background: #fef2f2;
+            color: var(--danger-color);
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .result.correct {
+            background: #f0fdf4;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .result.incorrect {
+            background: #fef2f2;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .explanation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #e0f2fe, #b3e5fc);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            display: none;
+        }
+
+        .explanation h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .explanation p {
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .submit-btn {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .final-result {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 2rem;
+        }
+
+        .breadcrumb-custom {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb-custom .breadcrumb-item {
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb-custom .breadcrumb-item.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .breadcrumb-custom .breadcrumb-item + .breadcrumb-item::before {
+            content: "→";
+            color: var(--text-secondary);
+        }
+
+        .footer-custom {
+            background: var(--dark-color);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .footer-custom h4 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                border-radius: 15px;
+            }
+            
+            .content-area {
+                padding: 2rem 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .sidebar {
+                min-height: auto;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-laptop-code me-2"></i>
+                Virtual Classes
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid" style="margin-top: 80px;">
+        <div class="main-container">
+            <div class="row no-gutters">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="sidebar">
+                        <ul class="sidebar-menu">
+                            <li>
+                                <a href="index.html">
+                                    <i class="fas fa-bullseye"></i>
+                                    <span>Aim</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="theory.html">
+                                    <i class="fas fa-book"></i>
+                                    <span>Theory</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="pretest.html" class="active">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span>Pre Test</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="procedure.html">
+                                    <i class="fas fa-list-ol"></i>
+                                    <span>Procedure</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="simulation.html">
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>Simulation</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="posttest.html">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span>Post Test</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="references.html">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>References</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="col-lg-9">
+                    <div class="content-area fade-in">
+                        <!-- Breadcrumb -->
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb breadcrumb-custom">
+                                <li class="breadcrumb-item">Deadlock Detection Algorithm</li>
+                                <li class="breadcrumb-item active">Pre Test</li>
+                            </ol>
+                        </nav>
+
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <h1 class="page-title">Deadlock Detection Algorithm</h1>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="content-card">
+                            <h2 class="section-title"><i class="fas fa-clipboard-check me-2"></i>Pre Test</h2>
+                            
+                            <div id="quiz">
+                                <!-- Question 1 -->
+                                <div class="question">
+                                    <div class="question-text">
+                                        <strong>1. What is a deadlock in concurrent computing?</strong>
+                                    </div>
+                                    <div class="options">
+                                        <div class="option">
+                                            <input type="radio" name="q1" value="a" id="q1a">
+                                            <label for="q1a">A situation where processes execute without interruption.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q1" value="b" id="q1b">
+                                            <label for="q1b">A situation where processes are in a loop.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q1" value="c" id="q1c">
+                                            <label for="q1c">A situation where processes cannot proceed because each is waiting for another to release a resource.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q1" value="d" id="q1d">
+                                            <label for="q1d">A situation where processes share resources efficiently.</label>
+                                        </div>
+                                    </div>
+                                    <div id="result-1" class="result" style="display: none;"></div>
+                                    <div id="explanation-1" class="explanation">
+                                        <h5><i class="fas fa-lightbulb me-2"></i>Explanation:</h5>
+                                        <p><strong>Correct Answer: C</strong><br>
+                                        A deadlock occurs when two or more processes are blocked forever, waiting for each other to release resources. This creates a circular dependency where no process can proceed. The four necessary conditions for deadlock are: mutual exclusion, hold and wait, no preemption, and circular wait. Understanding deadlock is crucial for system design and resource management.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Question 2 -->
+                                <div class="question">
+                                    <div class="question-text">
+                                        <strong>2. In deadlock detection, what does a cycle in the resource allocation graph indicate?</strong>
+                                    </div>
+                                    <div class="options">
+                                        <div class="option">
+                                            <input type="radio" name="q2" value="a" id="q2a">
+                                            <label for="q2a">Efficient resource usage.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q2" value="b" id="q2b">
+                                            <label for="q2b">A potential deadlock.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q2" value="c" id="q2c">
+                                            <label for="q2c">No deadlock.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q2" value="d" id="q2d">
+                                            <label for="q2d">High system performance.</label>
+                                        </div>
+                                    </div>
+                                    <div id="result-2" class="result" style="display: none;"></div>
+                                    <div id="explanation-2" class="explanation">
+                                        <h5><i class="fas fa-lightbulb me-2"></i>Explanation:</h5>
+                                        <p><strong>Correct Answer: B</strong><br>
+                                        In a resource allocation graph, a cycle indicates a potential deadlock situation. The graph consists of processes and resources connected by edges. If there's a cycle in the graph, it means processes are waiting for resources in a circular manner, which is the fundamental characteristic of deadlock. However, a cycle is necessary but not always sufficient for deadlock in systems with multiple instances of resource types.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Question 3 -->
+                                <div class="question">
+                                    <div class="question-text">
+                                        <strong>3. Which of the following is an application of deadlock detection algorithms?</strong>
+                                    </div>
+                                    <div class="options">
+                                        <div class="option">
+                                            <input type="radio" name="q3" value="a" id="q3a">
+                                            <label for="q3a">Single-task operating systems.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q3" value="b" id="q3b">
+                                            <label for="q3b">Database management systems.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q3" value="c" id="q3c">
+                                            <label for="q3c">Batch processing systems.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q3" value="d" id="q3d">
+                                            <label for="q3d">Graphical user interfaces.</label>
+                                        </div>
+                                    </div>
+                                    <div id="result-3" class="result" style="display: none;"></div>
+                                    <div id="explanation-3" class="explanation">
+                                        <h5><i class="fas fa-lightbulb me-2"></i>Explanation:</h5>
+                                        <p><strong>Correct Answer: B</strong><br>
+                                        Database management systems (DBMS) are a primary application of deadlock detection algorithms. In databases, multiple transactions may request locks on different resources (tables, rows, etc.) simultaneously, potentially creating deadlock situations. DBMS use deadlock detection algorithms to identify these situations and resolve them by aborting one of the conflicting transactions, ensuring system progress and data consistency.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Question 4 -->
+                                <div class="question">
+                                    <div class="question-text">
+                                        <strong>4. What problem is solved by Dijkstra's banker's algorithm?</strong>
+                                    </div>
+                                    <div class="options">
+                                        <div class="option">
+                                            <input type="radio" name="q4" value="a" id="q4a">
+                                            <label for="q4a">Cache coherence</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q4" value="b" id="q4b">
+                                            <label for="q4b">Mutual exclusion</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q4" value="c" id="q4c">
+                                            <label for="q4c">Deadlock recovery</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q4" value="d" id="q4d">
+                                            <label for="q4d">Deadlock avoidance</label>
+                                        </div>
+                                    </div>
+                                    <div id="result-4" class="result" style="display: none;"></div>
+                                    <div id="explanation-4" class="explanation">
+                                        <h5><i class="fas fa-lightbulb me-2"></i>Explanation:</h5>
+                                        <p><strong>Correct Answer: D</strong><br>
+                                        Dijkstra's Banker's Algorithm is designed for deadlock avoidance, not detection or recovery. It works by ensuring the system never enters an unsafe state by carefully analyzing resource requests before granting them. The algorithm maintains information about maximum resource needs, current allocations, and available resources to determine if granting a request would leave the system in a safe state where all processes can complete.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Question 5 -->
+                                <div class="question">
+                                    <div class="question-text">
+                                        <strong>5. Which of the following best describes the primary purpose of a deadlock detection algorithm?</strong>
+                                    </div>
+                                    <div class="options">
+                                        <div class="option">
+                                            <input type="radio" name="q5" value="a" id="q5a">
+                                            <label for="q5a">To prevent deadlocks by carefully allocating resources.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q5" value="b" id="q5b">
+                                            <label for="q5b">To avoid deadlocks by maintaining a safe state.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q5" value="c" id="q5c">
+                                            <label for="q5c">To identify and resolve deadlocks when they occur in the system.</label>
+                                        </div>
+                                        <div class="option">
+                                            <input type="radio" name="q5" value="d" id="q5d">
+                                            <label for="q5d">To ensure all processes have equal access to resources.</label>
+                                        </div>
+                                    </div>
+                                    <div id="result-5" class="result" style="display: none;"></div>
+                                    <div id="explanation-5" class="explanation">
+                                        <h5><i class="fas fa-lightbulb me-2"></i>Explanation:</h5>
+                                        <p><strong>Correct Answer: C</strong><br>
+                                        Deadlock detection algorithms are specifically designed to identify when deadlocks have already occurred in the system and then resolve them. Unlike prevention (which stops deadlocks from happening) or avoidance (which prevents entering unsafe states), detection allows deadlocks to occur but provides mechanisms to detect and recover from them, typically by terminating processes or preempting resources.</p>
+                                    </div>
+                                </div>
+
+                                <div class="submit-btn">
+                                    <button type="button" class="btn-custom" onclick="checkAnswers()">
+                                        <i class="fas fa-check me-2"></i>SUBMIT
+                                    </button>
+                                </div>
+
+                                <div id="final-result" class="final-result" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-custom">
+        <div class="container">
+            <h4><i class="fas fa-code me-2"></i>Developed by Nar Narayan Gaur</h4>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function checkAnswers() {
+            var answers = ['c', 'b', 'b', 'd', 'c'];
+            var totalQuestions = 5;
+            var correctAnswers = 0;
+
+            // Reset all option styles
+            $('.option').removeClass('correct incorrect');
+            $('.explanation').hide();
+
+            for (var i = 1; i <= totalQuestions; i++) {
+                var selectedOption = $('input[name=q' + i + ']:checked');
+                var resultElement = $('#result-' + i);
+                var explanationElement = $('#explanation-' + i);
+
+                if (selectedOption.length > 0) {
+                    var selectedAnswer = selectedOption.val();
+                    var selectedOptionDiv = selectedOption.parent();
+
+                    if (selectedAnswer === answers[i - 1]) {
+                        selectedOptionDiv.addClass('correct');
+                        resultElement.removeClass('incorrect').addClass('correct');
+                        resultElement.html('<i class="fas fa-check-circle me-2"></i>Correct!');
+                        correctAnswers++;
+                    } else {
+                        selectedOptionDiv.addClass('incorrect');
+                        resultElement.removeClass('correct').addClass('incorrect');
+                        resultElement.html('<i class="fas fa-times-circle me-2"></i>Wrong!');
+                    }
+                } else {
+                    resultElement.removeClass('correct').addClass('incorrect');
+                    resultElement.html('<i class="fas fa-exclamation-circle me-2"></i>No answer selected!');
+                }
+                
+                resultElement.show();
+                explanationElement.show();
+            }
+
+            var finalResult = $('#final-result');
+            var percentage = Math.round((correctAnswers / totalQuestions) * 100);
+            var grade = '';
+            var gradeColor = '';
+
+            if (percentage >= 80) {
+                grade = 'Excellent!';
+                gradeColor = '#10b981';
+            } else if (percentage >= 60) {
+                grade = 'Good!';
+                gradeColor = '#f59e0b';
+            } else {
+                grade = 'Needs Improvement';
+                gradeColor = '#ef4444';
+            }
+
+            finalResult.html(`
+                <i class="fas fa-chart-bar me-2"></i>
+                You scored ${correctAnswers} out of ${totalQuestions} questions (${percentage}%)<br>
+                <span style="color: ${gradeColor}; font-weight: bold;">${grade}</span>
+            `);
+            finalResult.show();
+
+            // Scroll to results
+            $('html, body').animate({
+                scrollTop: finalResult.offset().top - 100
+            }, 1000);
+        }
+
+        $(document).ready(function() {
+            // Add active class to current page
+            var currentPage = window.location.pathname.split('/').pop();
+            $('.sidebar-menu a').removeClass('active');
+            $('.sidebar-menu a[href="' + currentPage + '"]').addClass('active');
+        });
+    </script>
+</body>
+</html>
