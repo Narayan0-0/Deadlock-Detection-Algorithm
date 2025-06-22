@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Theory - Deadlock Detection Algorithm</title>
+    
+    <!-- Bootstrap 4.6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --border-color: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+            text-decoration: none;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            margin: 2rem auto;
+            max-width: 1400px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 800px;
+            padding: 2rem 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin: 0.5rem 0;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0 25px 25px 0;
+            margin-right: 1rem;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .content-area {
+            padding: 3rem;
+            min-height: 800px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--accent-color);
+            display: inline-block;
+        }
+
+        .subsection-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 2rem 0 1rem 0;
+        }
+
+        .content-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            text-align: justify;
+        }
+
+        .content-text ul, .content-text ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        .content-text li {
+            margin: 0.5rem 0;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e0f2fe, #b3e5fc);
+            border-left: 4px solid var(--primary-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-left: 4px solid var(--warning-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            border-left: 4px solid var(--success-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .image-caption {
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            font-size: 1rem;
+        }
+
+        .formula-box {
+            background: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+
+        .breadcrumb-custom {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb-custom .breadcrumb-item {
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb-custom .breadcrumb-item.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .breadcrumb-custom .breadcrumb-item + .breadcrumb-item::before {
+            content: "→";
+            color: var(--text-secondary);
+        }
+
+        .footer-custom {
+            background: var(--dark-color);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .footer-custom h4 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                border-radius: 15px;
+            }
+            
+            .content-area {
+                padding: 2rem 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .sidebar {
+                min-height: auto;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-laptop-code me-2"></i>
+                Virtual Classes
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid" style="margin-top: 80px;">
+        <div class="main-container">
+            <div class="row no-gutters">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="sidebar">
+                        <ul class="sidebar-menu">
+                            <li>
+                                <a href="index.html">
+                                    <i class="fas fa-bullseye"></i>
+                                    <span>Aim</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="theory.html" class="active">
+                                    <i class="fas fa-book"></i>
+                                    <span>Theory</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="pretest.html">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span>Pre Test</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="procedure.html">
+                                    <i class="fas fa-list-ol"></i>
+                                    <span>Procedure</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="simulation.html">
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>Simulation</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="posttest.html">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span>Post Test</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="references.html">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>References</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="col-lg-9">
+                    <div class="content-area fade-in">
+                        <!-- Breadcrumb -->
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb breadcrumb-custom">
+                                <li class="breadcrumb-item">Deadlock Detection Algorithm</li>
+                                <li class="breadcrumb-item active">Theory</li>
+                            </ol>
+                        </nav>
+
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <h1 class="page-title">Deadlock Detection Algorithm</h1>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="content-card">
+                            <h2 class="section-title">Introduction</h2>
+                            <div class="content-text">
+                                <p>Deadlock occurs in computing when two or more processes are unable to continue because each is waiting for the other to release resources. The main concepts involved are mutual exclusion, resource holding, circular wait, and no preemption.</p>
+                                
+                                <p>For example, imagine two trains approaching each other on a single track with no possibility to pass. When they meet, neither can move forward, effectively trapping both. This situation illustrates the concept of deadlock in a real-world scenario.</p>
+                            </div>
+
+                            <h3 class="subsection-title">How Does Deadlock occur in the Operating System?</h3>
+                            <div class="content-text">
+                                <p>In operating systems, a deadlock occurs when two or more processes hold resources and simultaneously wait for resources held by each other. For instance, consider the following diagram: Process 1 holds Resource 1 and waits for Resource 2, which is held by Process 2. Meanwhile, Process 2 is waiting for Resource 1, creating a circular dependency.</p>
+                            </div>
+
+                            <div class="image-container">
+                                <img src="images/file3.png" alt="Deadlock Occurrence Diagram">
+                                <div class="image-caption">Fig. 1 Deadlock Occurrence</div>
+                            </div>
+
+                            <h3 class="subsection-title">Necessary Conditions for Deadlock in OS</h3>
+                            <div class="info-box">
+                                <h4><i class="fas fa-info-circle me-2"></i>Four Coffman Conditions</h4>
+                                <p>Deadlock can occur if all of the following four conditions are met simultaneously:</p>
+                            </div>
+                            
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>Mutual Exclusion:</strong> Resources are non-shareable, meaning that only one process can use a resource at any given time.</li>
+                                    <li><strong>Hold and Wait:</strong> A process is currently holding at least one resource while waiting to acquire additional resources.</li>
+                                    <li><strong>No Preemption:</strong> Resources cannot be forcibly taken from a process; they must be voluntarily released by the process holding them.</li>
+                                    <li><strong>Circular Wait:</strong> A set of processes are each waiting for a resource held by another process in a circular chain.</li>
+                                </ul>
+                            </div>
+
+                            <h3 class="subsection-title">What is Deadlock Detection?</h3>
+                            <div class="content-text">
+                                <p>Deadlock detection is the process used by a system to identify if any set of processes is stuck in a state of indefinite waiting, where each process is waiting for resources held by the others, thereby preventing progress. In simpler terms, it involves determining whether any processes are trapped in a circular wait.</p>
+                                
+                                <p>Several algorithms are used for this purpose, including:</p>
+                                <ul>
+                                    <li>Resource Allocation Graph</li>
+                                    <li>Banker's Algorithm</li>
+                                </ul>
+                            </div>
+
+                            <h3 class="subsection-title">Banker's Algorithm</h3>
+                            <div class="highlight-box">
+                                <h4><i class="fas fa-university me-2"></i>About Banker's Algorithm</h4>
+                                <p>The Banker's Algorithm, developed by Edsger Dijkstra, is a resource allocation and deadlock avoidance algorithm used in operating systems to manage resources and ensure the system remains in a safe state.</p>
+                            </div>
+
+                            <div class="content-text">
+                                <p>It prevents deadlock by allocating resources in a manner that avoids unsafe states and checks the system's state for safety before granting resource requests.</p>
+
+                                <h4>Data Structures Used:</h4>
+                                <p>Let 'n' be the number of processes in the system and 'm' be the number of resource types.</p>
+
+                                <ol>
+                                    <li><strong>Processes and Resources:</strong>
+                                        <ul>
+                                            <li><strong>Processes(n):</strong> These are the active entities in the system that require resources to perform tasks.</li>
+                                            <li><strong>Resources(m):</strong> These are the passive entities that processes need, such as CPU time, memory, or I/O devices.</li>
+                                        </ul>
+                                    </li>
+                                    
+                                    <li><strong>Maximum (Max):</strong>
+                                        <ul>
+                                            <li>It is a 2-d array of size 'n*m' that defines the maximum demand of each process in a system.</li>
+                                            <li>Max[i, j] = k means process P<sub>i</sub> may request at most 'k' instances of resource type R<sub>j</sub>.</li>
+                                        </ul>
+                                    </li>
+                                    
+                                    <li><strong>Allocation:</strong>
+                                        <ul>
+                                            <li>It is a 2-d array of size 'n*m' that defines the number of resources of each type currently allocated to each process.</li>
+                                            <li>Allocation[i, j] = k means process P<sub>i</sub> is currently allocated 'k' instances of resource type R<sub>j</sub></li>
+                                        </ul>
+                                    </li>
+                                    
+                                    <li><strong>Available:</strong>
+                                        <ul>
+                                            <li>It is a 1-d array of size 'm' indicating the number of available resources of each type.</li>
+                                            <li>Available[j] = k means there are 'k' instances of resource type R<sub>j</sub></li>
+                                        </ul>
+                                    </li>
+                                    
+                                    <li><strong>Need:</strong>
+                                        <ul>
+                                            <li>It is a 2-d array of size 'n*m' that indicates the remaining resource need of each process.</li>
+                                            <li>Need[i, j] = k means process P<sub>i</sub> currently needs 'k' instances of resource type R<sub>j</sub></li>
+                                        </ul>
+                                    </li>
+                                </ol>
+
+                                <div class="formula-box">
+                                    <strong>Need[i, j] = Max[i, j] – Allocation[i, j]</strong>
+                                </div>
+                            </div>
+
+                            <div class="image-container">
+                                <img src="images/deadlock.jpg" alt="Safe, Unsafe and Deadlock State">
+                                <div class="image-caption">Fig. 2 Safe, Unsafe and Deadlock State</div>
+                            </div>
+
+                            <h3 class="subsection-title">Advantages</h3>
+                            <div class="success-box">
+                                <ul>
+                                    <li>Allows more dynamic and flexible allocation of resources compared to prevention and avoidance strategies.</li>
+                                    <li>Detects deadlocks as they occur, enabling timely intervention to resolve them.</li>
+                                    <li>Maximizes resource utilization by not imposing strict constraints to prevent deadlocks.</li>
+                                </ul>
+                            </div>
+
+                            <h3 class="subsection-title">Disadvantages</h3>
+                            <div class="warning-box">
+                                <ul>
+                                    <li>Continuous monitoring and analysis of resource allocation can introduce computational overhead.</li>
+                                    <li>Requires sophisticated mechanisms to accurately detect cycles or knots in resource allocation graphs.</li>
+                                    <li>Delays in detection or resolution can impact system performance and user experience.</li>
+                                </ul>
+                            </div>
+
+                            <h3 class="subsection-title">Applications</h3>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>Operating Systems:</strong> Essential for managing resources like memory, CPU, and I/O devices.</li>
+                                    <li><strong>Database Management Systems (DBMS):</strong> Critical for managing transaction concurrency and resource locking.</li>
+                                    <li><strong>Distributed Systems:</strong> Important for managing resources across multiple nodes in a network.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-custom">
+        <div class="container">
+            <h4><i class="fas fa-code me-2"></i>Developed by Nar Narayan Gaur</h4>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Add active class to current page
+            var currentPage = window.location.pathname.split('/').pop();
+            $('.sidebar-menu a').removeClass('active');
+            $('.sidebar-menu a[href="' + currentPage + '"]').addClass('active');
+        });
+    </script>
+</body>
+</html>
