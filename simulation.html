@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Simulation - Deadlock Detection Algorithm</title>
+    
+    <!-- Bootstrap 4.6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --border-color: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+            text-decoration: none;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            margin: 2rem auto;
+            max-width: 1600px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 900px;
+            padding: 2rem 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin: 0.5rem 0;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0 25px 25px 0;
+            margin-right: 1rem;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .content-area {
+            padding: 3rem;
+            min-height: 900px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .simulation-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--accent-color);
+            display: inline-block;
+        }
+
+        .input-section {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .input-group-custom {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group-custom label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .input-group-custom input,
+        .input-group-custom select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group-custom input:focus,
+        .input-group-custom select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            margin: 0.5rem;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-custom:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .matrices-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .matrix-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .matrix-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.8rem;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .matrix-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .matrix-table td {
+            background: white;
+        }
+
+        .matrix-table td.process-label {
+            background: var(--accent-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .matrix-table td.highlighted {
+            background: #fef3c7;
+            animation: pulse 1s infinite;
+        }
+
+        .matrix-table td.correct {
+            background: #dcfce7;
+            color: var(--success-color);
+        }
+
+        .matrix-table td.incorrect {
+            background: #fef2f2;
+            color: var(--danger-color);
+        }
+
+        .matrix-table input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 0.95rem;
+            padding: 0.2rem;
+        }
+
+        .matrix-table input:focus {
+            outline: 2px solid var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .control-panel {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .output-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-top: 2rem;
+            min-height: 300px;
+        }
+
+        .output-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .step-output {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin: 1rem 0;
+        }
+
+        .safe-sequence {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+
+        .unsafe-state {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+
+        .breadcrumb-custom {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb-custom .breadcrumb-item {
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb-custom .breadcrumb-item.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .breadcrumb-custom .breadcrumb-item + .breadcrumb-item::before {
+            content: "→";
+            color: var(--text-secondary);
+        }
+
+        .footer-custom {
+            background: var(--dark-color);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .footer-custom h4 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                border-radius: 15px;
+            }
+            
+            .content-area {
+                padding: 2rem 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .sidebar {
+                min-height: auto;
+            }
+
+            .matrices-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-laptop-code me-2"></i>
+                Virtual Classes
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid" style="margin-top: 80px;">
+        <div class="main-container">
+            <div class="row no-gutters">
+                <!-- Sidebar -->
+                <div class="col-lg-2">
+                    <div class="sidebar">
+                        <ul class="sidebar-menu">
+                            <li>
+                                <a href="index.html">
+                                    <i class="fas fa-bullseye"></i>
+                                    <span>Aim</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="theory.html">
+                                    <i class="fas fa-book"></i>
+                                    <span>Theory</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="pretest.html">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span>Pre Test</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="procedure.html">
+                                    <i class="fas fa-list-ol"></i>
+                                    <span>Procedure</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="simulation.html" class="active">
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>Simulation</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="posttest.html">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <span>Post Test</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="references.html">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>References</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="col-lg-10">
+                    <div class="content-area fade-in">
+                        <!-- Breadcrumb -->
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb breadcrumb-custom">
+                                <li class="breadcrumb-item">Deadlock Detection Algorithm</li>
+                                <li class="breadcrumb-item active">Simulation</li>
+                            </ol>
+                        </nav>
+
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <h1 class="page-title">Deadlock Detection Algorithm Simulation</h1>
+                        </div>
+
+                        <!-- Input Section -->
+                        <div class="simulation-container">
+                            <h2 class="section-title"><i class="fas fa-cogs me-2"></i>Configuration</h2>
+                            
+                            <div class="input-section">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-group-custom">
+                                            <label for="processCount">Number of Processes (P):</label>
+                                            <select id="processCount" class="form-control">
+                                                <option value="">Select Processes</option>
+                                                <option value="3">3 Processes</option>
+                                                <option value="4">4 Processes</option>
+                                                <option value="5">5 Processes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group-custom">
+                                            <label for="resourceCount">Number of Resources (R):</label>
+                                            <select id="resourceCount" class="form-control">
+                                                <option value="">Select Resources</option>
+                                                <option value="1">1 Resource</option>
+                                                <option value="2">2 Resources</option>
+                                                <option value="3">3 Resources</option>
+                                                <option value="4">4 Resources</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button id="initializeBtn" class="btn-custom" onclick="initializeMatrices()">
+                                        <i class="fas fa-play me-2"></i>Initialize Matrices
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Matrices Section -->
+                        <div id="matricesSection" style="display: none;">
+                            <div class="simulation-container">
+                                <h2 class="section-title"><i class="fas fa-table me-2"></i>System Matrices</h2>
+                                
+                                <div class="matrices-container" id="matricesContainer">
+                                    <!-- Matrices will be dynamically generated here -->
+                                </div>
+
+                                <!-- Need Matrix Input -->
+                                <div id="needMatrixSection" style="display: none;">
+                                    <div class="matrix-card">
+                                        <div class="matrix-title">Need Matrix (Enter Values)</div>
+                                        <p class="text-center text-muted mb-3">
+                                            <strong>Formula:</strong> Need = Maximum - Allocation
+                                        </p>
+                                        <div id="needMatrixContainer"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Control Panel -->
+                                <div class="control-panel">
+                                    <button id="checkBtn" class="btn-custom" onclick="checkNeedMatrix()" disabled>
+                                        <i class="fas fa-check me-2"></i>CHECK
+                                    </button>
+                                    <button id="startBtn" class="btn-custom" onclick="startAlgorithm()" disabled>
+                                        <i class="fas fa-play me-2"></i>START
+                                    </button>
+                                    <button id="nextBtn" class="btn-custom" onclick="nextStep()" disabled>
+                                        <i class="fas fa-step-forward me-2"></i>NEXT
+                                    </button>
+                                    <button id="resetBtn" class="btn-custom" onclick="resetSimulation()">
+                                        <i class="fas fa-redo me-2"></i>RESET
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Output Section -->
+                            <div class="output-section">
+                                <div class="output-title"><i class="fas fa-desktop me-2"></i>Algorithm Execution</div>
+                                <div id="outputContent">
+                                    <p class="text-center text-muted">Configure the system and start the algorithm to see the execution steps.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-custom">
+        <div class="container">
+            <h4><i class="fas fa-code me-2"></i>Developed by Nar Narayan Gaur</h4>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Global variables
+        let processCount = 0;
+        let resourceCount = 0;
+        let allocationMatrix = [];
+        let maximumMatrix = [];
+        let availableResources = [];
+        let needMatrix = [];
+        let workVector = [];
+        let finishVector = [];
+        let safeSequence = [];
+        let currentStep = 0;
+        let isAlgorithmStarted = false;
+
+        // Predefined data sets for different configurations
+        const dataSets = {
+            '3-2': {
+                allocation: [[1, 1], [1, 1], [2, 1]],
+                maximum: [[2, 3], [3, 2], [4, 4]],
+                available: [1, 1]
+            },
+            '4-1': {
+                allocation: [[3], [1], [3], [0]],
+                maximum: [[9], [6], [5], [10]],
+                available: [2]
+            },
+            '4-4': {
+                allocation: [[2, 0, 1, 1], [0, 1, 0, 0], [1, 0, 1, 1], [1, 1, 0, 1]],
+                maximum: [[3, 1, 1, 1], [0, 2, 1, 2], [3, 1, 1, 1], [1, 1, 1, 1]],
+                available: [1, 0, 2, 0]
+            },
+            '5-3': {
+                allocation: [[0, 1, 0], [2, 0, 0], [3, 0, 2], [2, 1, 1], [0, 0, 2]],
+                maximum: [[7, 5, 3], [3, 2, 2], [9, 0, 2], [2, 2, 2], [4, 3, 3]],
+                available: [3, 3, 2]
+            },
+            '5-4': {
+                allocation: [[0, 1, 1, 0], [1, 2, 3, 1], [1, 3, 6, 5], [0, 6, 3, 2], [0, 0, 1, 4]],
+                maximum: [[0, 2, 1, 0], [1, 6, 5, 2], [2, 3, 6, 6], [0, 6, 5, 2], [0, 6, 5, 6]],
+                available: [1, 5, 2, 0]
+            }
+        };
+
+        function initializeMatrices() {
+            processCount = parseInt(document.getElementById('processCount').value);
+            resourceCount = parseInt(document.getElementById('resourceCount').value);
+
+            if (!processCount || !resourceCount) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Input',
+                    text: 'Please select both number of processes and resources.',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            // Get predefined data
+            const key = `${processCount}-${resourceCount}`;
+            const data = dataSets[key];
+
+            if (!data) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Configuration Not Available',
+                    text: 'This combination of processes and resources is not available in the simulation.',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            allocationMatrix = data.allocation;
+            maximumMatrix = data.maximum;
+            availableResources = data.available;
+
+            // Calculate need matrix
+            needMatrix = [];
+            for (let i = 0; i < processCount; i++) {
+                needMatrix[i] = [];
+                for (let j = 0; j < resourceCount; j++) {
+                    needMatrix[i][j] = maximumMatrix[i][j] - allocationMatrix[i][j];
+                }
+            }
+
+            displayMatrices();
+            document.getElementById('matricesSection').style.display = 'block';
+            document.getElementById('checkBtn').disabled = false;
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Matrices Initialized',
+                text: 'System matrices have been generated. Please enter the Need Matrix values.',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
+        function displayMatrices() {
+            const container = document.getElementById('matricesContainer');
+            container.innerHTML = '';
+
+            // Allocation Matrix
+            container.appendChild(createMatrixDisplay('Allocation Matrix', allocationMatrix));
+            
+            // Maximum Matrix
+            container.appendChild(createMatrixDisplay('Maximum Matrix', maximumMatrix));
+            
+            // Available Resources
+            container.appendChild(createAvailableDisplay());
+
+            // Need Matrix Input
+            displayNeedMatrixInput();
+        }
+
+        function createMatrixDisplay(title, matrix) {
+            const card = document.createElement('div');
+            card.className = 'matrix-card';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'matrix-title';
+            titleDiv.textContent = title;
+
+            const table = document.createElement('table');
+            table.className = 'matrix-table';
+
+            // Header row
+            const headerRow = document.createElement('tr');
+            headerRow.appendChild(document.createElement('th')); // Empty cell for process labels
+            for (let j = 0; j < resourceCount; j++) {
+                const th = document.createElement('th');
+                th.textContent = `R${j}`;
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+
+            // Data rows
+            for (let i = 0; i < processCount; i++) {
+                const row = document.createElement('tr');
+                
+                const processCell = document.createElement('td');
+                processCell.className = 'process-label';
+                processCell.textContent = `P${i}`;
+                row.appendChild(processCell);
+
+                for (let j = 0; j < resourceCount; j++) {
+                    const cell = document.createElement('td');
+                    cell.textContent = matrix[i][j];
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+
+            card.appendChild(titleDiv);
+            card.appendChild(table);
+            return card;
+        }
+
+        function createAvailableDisplay() {
+            const card = document.createElement('div');
+            card.className = 'matrix-card';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'matrix-title';
+            titleDiv.textContent = 'Available Resources';
+
+            const table = document.createElement('table');
+            table.className = 'matrix-table';
+
+            // Header row
+            const headerRow = document.createElement('tr');
+            for (let j = 0; j < resourceCount; j++) {
+                const th = document.createElement('th');
+                th.textContent = `R${j}`;
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+
+            // Data row
+            const row = document.createElement('tr');
+            for (let j = 0; j < resourceCount; j++) {
+                const cell = document.createElement('td');
+                cell.textContent = availableResources[j];
+                cell.id = `available-${j}`;
+                row.appendChild(cell);
+            }
+            table.appendChild(row);
+
+            card.appendChild(titleDiv);
+            card.appendChild(table);
+            return card;
+        }
+
+        function displayNeedMatrixInput() {
+            const container = document.getElementById('needMatrixContainer');
+            container.innerHTML = '';
+
+            const table = document.createElement('table');
+            table.className = 'matrix-table';
+
+            // Header row
+            const headerRow = document.createElement('tr');
+            headerRow.appendChild(document.createElement('th')); // Empty cell
+            for (let j = 0; j < resourceCount; j++) {
+                const th = document.createElement('th');
+                th.textContent = `R${j}`;
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+
+            // Input rows
+            for (let i = 0; i < processCount; i++) {
+                const row = document.createElement('tr');
+                
+                const processCell = document.createElement('td');
+                processCell.className = 'process-label';
+                processCell.textContent = `P${i}`;
+                row.appendChild(processCell);
+
+                for (let j = 0; j < resourceCount; j++) {
+                    const cell = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '0';
+                    input.id = `need-${i}-${j}`;
+                    input.addEventListener('input', enableCheckButton);
+                    cell.appendChild(input);
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+
+            container.appendChild(table);
+            document.getElementById('needMatrixSection').style.display = 'block';
+        }
+
+        function enableCheckButton() {
+            document.getElementById('checkBtn').disabled = false;
+        }
+
+        function checkNeedMatrix() {
+            let isValid = true;
+            const userNeedMatrix = [];
+
+            for (let i = 0; i < processCount; i++) {
+                userNeedMatrix[i] = [];
+                for (let j = 0; j < resourceCount; j++) {
+                    const input = document.getElementById(`need-${i}-${j}`);
+                    const value = parseInt(input.value);
+                    
+                    if (isNaN(value)) {
+                        input.style.border = '2px solid #ef4444';
+                        isValid = false;
+                        continue;
+                    }
+
+                    userNeedMatrix[i][j] = value;
+                    const correctValue = needMatrix[i][j];
+
+                    if (value === correctValue) {
+                        input.parentElement.className = 'correct';
+                        input.style.border = '2px solid #10b981';
+                    } else {
+                        input.parentElement.className = 'incorrect';
+                        input.style.border = '2px solid #ef4444';
+                        isValid = false;
+                    }
+                }
+            }
+
+            if (isValid) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Correct!',
+                    text: 'Need Matrix is correct. Click START to begin the algorithm.',
+                    confirmButtonColor: '#2563eb'
+                });
+                document.getElementById('checkBtn').disabled = true;
+                document.getElementById('startBtn').disabled = false;
+                
+                // Make inputs readonly
+                for (let i = 0; i < processCount; i++) {
+                    for (let j = 0; j < resourceCount; j++) {
+                        document.getElementById(`need-${i}-${j}`).readOnly = true;
+                    }
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Incorrect!',
+                    text: 'Some values in the Need Matrix are incorrect. Please check the highlighted cells.',
+                    confirmButtonColor: '#2563eb'
+                });
+            }
+        }
+
+        function startAlgorithm() {
+            workVector = [...availableResources];
+            finishVector = new Array(processCount).fill(false);
+            safeSequence = [];
+            currentStep = 0;
+            isAlgorithmStarted = true;
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+
+            updateOutput(`
+                <div class="step-output">
+                    <h4><i class="fas fa-play-circle me-2"></i>Algorithm Started</h4>
+                    <p><strong>Step 1:</strong> Initialize Work and Finish vectors</p>
+                    <p><strong>Work Vector:</strong> [${workVector.join(', ')}]</p>
+                    <p><strong>Finish Vector:</strong> [${finishVector.map(f => f ? 'True' : 'False').join(', ')}]</p>
+                </div>
+            `);
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Algorithm Started',
+                text: 'Click NEXT to proceed step by step through the Banker\'s Algorithm.',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
+        function nextStep() {
+            if (!isAlgorithmStarted) return;
+
+            // Find a process that can be satisfied
+            let foundProcess = -1;
+            for (let i = 0; i < processCount; i++) {
+                if (!finishVector[i]) {
+                    let canSatisfy = true;
+                    for (let j = 0; j < resourceCount; j++) {
+                        if (needMatrix[i][j] > workVector[j]) {
+                            canSatisfy = false;
+                            break;
+                        }
+                    }
+                    if (canSatisfy) {
+                        foundProcess = i;
+                        break;
+                    }
+                }
+            }
+
+            if (foundProcess !== -1) {
+                // Process can be satisfied
+                finishVector[foundProcess] = true;
+                safeSequence.push(`P${foundProcess}`);
+                
+                // Update work vector
+                for (let j = 0; j < resourceCount; j++) {
+                    workVector[j] += allocationMatrix[foundProcess][j];
+                }
+
+                highlightProcess(foundProcess);
+                updateAvailableDisplay();
+
+                updateOutput(`
+                    <div class="step-output">
+                        <h4><i class="fas fa-check-circle me-2"></i>Process P${foundProcess} Executed</h4>
+                        <p><strong>Need${foundProcess}:</strong> [${needMatrix[foundProcess].join(', ')}] ≤ Work: [${workVector.map((w, i) => w - allocationMatrix[foundProcess][i]).join(', ')}] ✓</p>
+                        <p><strong>Updated Work Vector:</strong> [${workVector.join(', ')}]</p>
+                        <p><strong>Finish Vector:</strong> [${finishVector.map(f => f ? 'True' : 'False').join(', ')}]</p>
+                        <p><strong>Safe Sequence so far:</strong> ${safeSequence.join(' → ')}</p>
+                    </div>
+                `);
+
+                // Check if all processes are finished
+                if (finishVector.every(f => f)) {
+                    document.getElementById('nextBtn').disabled = true;
+                    updateOutput(`
+                        <div class="step-output">
+                            <h4><i class="fas fa-trophy me-2"></i>Algorithm Complete</h4>
+                            <div class="safe-sequence">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Safe State Found!<br>
+                                Safe Sequence: ${safeSequence.join(' → ')}
+                            </div>
+                        </div>
+                    `);
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Safe State Found!',
+                        text: `Safe Sequence: ${safeSequence.join(' → ')}`,
+                        confirmButtonColor: '#2563eb'
+                    });
+                }
+            } else {
+                // No process can be satisfied - deadlock detected
+                document.getElementById('nextBtn').disabled = true;
+                updateOutput(`
+                    <div class="step-output">
+                        <h4><i class="fas fa-exclamation-triangle me-2"></i>Algorithm Complete</h4>
+                        <div class="unsafe-state">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Unsafe State Detected!<br>
+                            No process can proceed with current resources.
+                        </div>
+                    </div>
+                `);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Unsafe State!',
+                    text: 'The system is in an unsafe state. Deadlock may occur.',
+                    confirmButtonColor: '#2563eb'
+                });
+            }
+        }
+
+        function highlightProcess(processIndex) {
+            // Remove previous highlights
+            document.querySelectorAll('.matrix-table td.highlighted').forEach(cell => {
+                cell.classList.remove('highlighted');
+            });
+
+            // Highlight current process in all matrices
+            const tables = document.querySelectorAll('.matrix-table');
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tr');
+                if (rows[processIndex + 1]) { // +1 because of header row
+                    const cells = rows[processIndex + 1].querySelectorAll('td');
+                    cells.forEach(cell => {
+                        if (!cell.classList.contains('process-label')) {
+                            cell.classList.add('highlighted');
+                        }
+                    });
+                }
+            });
+        }
+
+        function updateAvailableDisplay() {
+            for (let j = 0; j < resourceCount; j++) {
+                const cell = document.getElementById(`available-${j}`);
+                if (cell) {
+                    cell.textContent = workVector[j];
+                    cell.classList.add('highlighted');
+                    setTimeout(() => {
+                        cell.classList.remove('highlighted');
+                    }, 2000);
+                }
+            }
+        }
+
+        function updateOutput(content) {
+            document.getElementById('outputContent').innerHTML = content;
+        }
+
+        function resetSimulation() {
+            // Reset all variables
+            processCount = 0;
+            resourceCount = 0;
+            allocationMatrix = [];
+            maximumMatrix = [];
+            availableResources = [];
+            needMatrix = [];
+            workVector = [];
+            finishVector = [];
+            safeSequence = [];
+            currentStep = 0;
+            isAlgorithmStarted = false;
+
+            // Reset UI
+            document.getElementById('processCount').value = '';
+            document.getElementById('resourceCount').value = '';
+            document.getElementById('matricesSection').style.display = 'none';
+            document.getElementById('needMatrixSection').style.display = 'none';
+            
+            // Reset buttons
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+
+            // Clear output
+            updateOutput('<p class="text-center text-muted">Configure the system and start the algorithm to see the execution steps.</p>');
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Simulation Reset',
+                text: 'All data has been cleared. You can start a new simulation.',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
+        // Initialize page
+        $(document).ready(function() {
+            // Add active class to current page
+            var currentPage = window.location.pathname.split('/').pop();
+            $('.sidebar-menu a').removeClass('active');
+            $('.sidebar-menu a[href="' + currentPage + '"]').addClass('active');
+        });
+    </script>
+</body>
+</html>
