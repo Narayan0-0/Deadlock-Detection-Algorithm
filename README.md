@@ -288,5 +288,7 @@ This comprehensive README file provides:
 - Educational impact goals
 - Version history
 
+```
+
 The README serves as both a technical guide for developers and an educational resource for students and instructors using the Virtual classes platform.
 
